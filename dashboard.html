@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickFix Generator Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-bg: #34495e;
+            --light-bg: #ecf0f1;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header .version {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            color: var(--primary-color);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+
+        /* Tables */
+        .data-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .table-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--light-bg);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .badge-info {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Progress Bars */
+        .progress {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success-color);
+            transition: width 0.5s ease;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Charts Container */
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        #chartCanvas {
+            max-width: 100%;
+            height: 300px;
+        }
+
+        /* Hide sections by default */
+        .hidden-section {
+            display: none;
+        }
+        #templates.hidden-section {
+            display: none;
+        }
+        #patterns.hidden-section {
+            display: none;
+        }
+        #solutions.hidden-section {
+            display: none;
+        }
+        #backups.hidden-section {
+            display: none;
+        }
+        #logs.hidden-section {
+            display: none;
+        }
+        #backups {
+            display: none;
+        }
+        #settings.hidden-section {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-left: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+
+        .notification.warning {
+            background-color: var(--warning-color);
+        }
+
+        .float-right {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>QuickFix</h1>
+                <div class="version">v1.0.0</div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#overview" class="nav-link active" data-section="overview">
+                            <i>📊</i> Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#patterns" class="nav-link" data-section="patterns">
+                            <i>🎯</i> Error Patterns
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#solutions" class="nav-link" data-section="solutions">
+                            <i>🔧</i> Solutions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#templates" class="nav-link" data-section="templates">
+                            <i>📋</i> Templates
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#backups" class="nav-link" data-section="backups">
+                            <i>💾</i> Backups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#logs" class="nav-link" data-section="logs">
+                            <i>📝</i> Activity Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings" class="nav-link" data-section="settings">
+                            <i>⚙️</i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h2 id="pageTitle">QuickFix Dashboard</h2>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>System Active</span>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview" class="content-section">
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Total Solutions</div>
+                        </div>
+                        <div class="card-value" id="totalSolutions">0</div>
+                        <div class="card-subtitle">Active solutions in database</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Success Rate</div>
+                        </div>
+                        <div class="card-value" id="successRate">0%</div>
+                        <div class="card-subtitle">Overall fix success rate</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Files Processed</div>
+                        </div>
+                        <div class="card-value" id="filesProcessed">0</div>
+                        <div class="card-subtitle">Files analyzed today</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Auto Fixes</div>
+                        </div>
+                        <div class="card-value" id="autoFixes">0</div>
+                        <div class="card-subtitle">Automatically applied fixes</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Success Rate Trends</div>
+                    <canvas id="chartCanvas"></canvas>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">Recent Activity</div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>File</th>
+                                    <th>Pattern</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentActivity">
+                                <tr>
+                                    <td colspan="5" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading recent activity...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+            <!-- Error Patterns Section -->
+            <div id="patterns" class="content-section hidden-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        Error Patterns
+                        <button class="btn btn-primary float-right" onclick="refreshPatterns()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pattern ID</th>
+                                    <th>Language</th>
+                                    <th>Occurrences</th>
+                                    <th>Success Rate</th>
+                                    <th>Trending</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patternsTable">
+                                <tr>
+                                    <td colspan="6" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading error patterns...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="solutions" class="content-section hidden-section">
+
+            <!-- Solutions Section -->
+            <!-- Solutions Section -->
+            <div id="solutions" class="content-section hidden-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        Master Solutions Archive
+                        <button class="btn btn-success float-right" onclick="exportSolutions()">
+                            📥 Export
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Solution ID</th>
+                                    <th>Language</th>
+                                    <th>Description</th>
+                                    <th>Success Rate</th>
+                                    <th>Applications</th>
+                                    <th>Auto-Apply</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="solutionsTable">
+                                <tr>
+                                    <td colspan="7" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading solutions...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="templates" class="content-section hidden-section">
+            <!-- Templates Section -->
+            <div id="templates" class="content-section hidden-section">
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Active Templates</div>
+                        </div>
+                        <div class="card-value" id="totalTemplates">0</div>
+                        <div class="card-subtitle">Generated templates</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Redundant Solutions</div>
+                        </div>
+                        <div class="card-value" id="redundantSolutions">0</div>
+                        <div class="card-subtitle">Potential consolidations</div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        Solution Templates
+                        <button class="btn btn-primary float-right" onclick="generateTemplates()">
+                            ⚡ Generate Templates
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Template ID</th>
+                                    <th>Language</th>
+                                    <th>Pattern</th>
+                                    <th>Confidence</th>
+                                    <th>Usage Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="templatesTable">
+                                <tr>
+                                    <td colspan="6" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading templates...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+                    <div class="table-header">
+                        Backup Files
+                        <button class="btn btn-warning float-right" onclick="cleanupBackups()">
+                            🧹 Cleanup Old
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Backup ID</th>
+                                    <th>Original File</th>
+                                    <th>Created</th>
+                                    <th>Size</th>
+                                    <th>Solution</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backupsTable">
+                                <tr>
+                                    <td colspan="6" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading backups...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <div id="logs" class="content-section hidden-section">
+
+            <!-- Logs Section -->
+            <div id="logs" class="content-section hidden-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        Activity Logs
+                        <button class="btn btn-primary float-right" onclick="refreshLogs()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Level</th>
+                                    <th>Component</th>
+                                    <th>Message</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTable">
+                                <tr>
+                                    <td colspan="5" class="loading">
+                                        <div class="spinner"></div>
+                                        <div>Loading activity logs...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <div id="settings" class="content-section hidden-section">
+
+            <!-- Settings Section -->
+            <div id="settings" class="content-section hidden-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">System Settings</div>
+                    </div>
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label for="autoApplyFixes">Auto-Apply Fixes</label>
+                            <select id="autoApplyFixes" name="auto_apply_fixes">
+                                <option value="false">Manual Review Required</option>
+                                <option value="true">Automatic Application</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="backupRetention">Backup Retention (days)</label>
+                            <input type="number" id="backupRetention" name="backup_retention" min="1" max="365" value="7">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxTempEntries">Max Temp Log Entries</label>
+                            <input type="number" id="maxTempEntries" name="max_temp_entries" min="100" max="10000" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="watchPatterns">File Watch Patterns</label>
+                            <textarea id="watchPatterns" name="watch_patterns" rows="3" placeholder="*.html,*.css,*.js,*.py"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                        <button type="button" class="btn btn-warning" onclick="resetSettings()">Reset to Defaults</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Solution Details Modal -->
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeSolutionModal()">&times;</span>
+            <h3 id="modalTitle">Solution Details</h3>
+            <div id="modalContent">
+                <!-- Solution details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Global variables
+        let currentSection = 'overview';
+        let refreshInterval = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            loadDashboardData();
+            startAutoRefresh();
+            loadSettings();
+        });
+
+        // Navigation handling
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // Update active nav item
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Show specific section
+        function showSection(section) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(s => s.style.display = 'none');
+            
+            // Show selected section
+            const targetSection = document.getElementById(section);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                currentSection = section;
+                
+                // Update page title
+                const titles = {
+                    'overview': 'Dashboard Overview',
+                    'patterns': 'Error Patterns',
+                    'solutions': 'Solutions Archive',
+                    'templates': 'Solution Templates',
+                    'backups': 'Backup Management',
+                    'logs': 'Activity Logs',
+                    'settings': 'System Settings'
+                };
+                document.getElementById('pageTitle').textContent = titles[section] || 'QuickFix Dashboard';
+                
+                // Load section-specific data
+                loadSectionData(section);
+            }
+        }
+
+        // Load data for specific section
+        function loadSectionData(section) {
+            switch(section) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'patterns':
+                    loadPatternsData();
+                    break;
+                case 'solutions':
+                    loadSolutionsData();
+                    break;
+                case 'templates':
+                    loadTemplatesData();
+                    break;
+                case 'backups':
+                    loadBackupsData();
+                    break;
+                case 'logs':
+                    loadLogsData();
+                    break;
+            }
+        }
+
+        // Load overview data
+        function loadOverviewData() {
+            // Simulate API calls - in real implementation, these would be actual API endpoints
+            setTimeout(() => {
+                document.getElementById('totalSolutions').textContent = '127';
+                document.getElementById('successRate').textContent = '89%';
+                document.getElementById('filesProcessed').textContent = '45';
+                document.getElementById('autoFixes').textContent = '23';
+                
+                // Load recent activity
+                loadRecentActivity();
+                
+                // Initialize chart
+                initializeChart();
+            }, 500);
+        }
+
+        // Load recent activity
+        function loadRecentActivity() {
+            const tbody = document.getElementById('recentActivity');
+            const activities = [
+                {
+                    time: '14:32:15',
+                    file: 'src/components/Header.js',
+                    pattern: 'js_missing_semicolon',
+                    status: 'success',
+                    hasBackup: true
+                },
+                {
+                    time: '14:28:03',
+                    file: 'styles/main.css',
+                    pattern: 'css_missing_semicolon',
+                    status: 'success',
+                    hasBackup: true
+                },
+                {
+                    time: '14:25:47',
+                    file: 'index.html',
+                    pattern: 'html_unclosed_tag',
+                    status: 'failed',
+                    hasBackup: false
+                }
+            ];
+
+            tbody.innerHTML = activities.map(activity => `
+                <tr>
+                    <td>${activity.time}</td>
+                    <td>${activity.file}</td>
+                    <td><span class="badge badge-info">${activity.pattern}</span></td>
+                    <td>
+                        <span class="badge ${activity.status === 'success' ? 'badge-success' : 'badge-danger'}">
+                            ${activity.status}
+                        </span>
+                    </td>
+                    <td>
+                        ${activity.hasBackup ? '<button class="btn btn-warning" onclick="rollback(\'' + activity.file + '\')">Rollback</button>' : ''}
+                        <button class="btn btn-primary" onclick="viewDetails(\'' + activity.pattern + '\')">Details</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize chart
+        function initializeChart() {
+            const canvas = document.getElementById('chartCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Simple chart implementation (in real app, use Chart.js or similar)
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            
+            // Draw a simple line chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            
+            const data = [65, 70, 75, 80, 85, 89, 89]; // Success rates over time
+            const maxValue = Math.max(...data);
+            const stepX = canvas.width / (data.length - 1);
+            const stepY = (canvas.height - 40) / maxValue;
+            
+            ctx.beginPath();
+            data.forEach((value, index) => {
+                const x = index * stepX;
+                const y = canvas.height - 20 - (value * stepY);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            
+            // Draw data points
+            ctx.fillStyle = '#3498db';
+            data.forEach((value, index) => {
+                const x = index * stepX;
+                const y = canvas.height - 20 - (value * stepY);
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        // Load patterns data
+        function loadPatternsData() {
+            const tbody = document.getElementById('patternsTable');
+            
+            setTimeout(() => {
+                const patterns = [
+                    {
+                        id: 'html_unclosed_tag',
+                        language: 'HTML',
+                        occurrences: 45,
+                        successRate: 92,
+                        trending: true
+                    },
+                    {
+                        id: 'js_missing_semicolon',
+                        language: 'JavaScript',
+                        occurrences: 78,
+                        successRate: 98,
+                        trending: false
+                    },
+                    {
+                        id: 'css_missing_semicolon',
+                        language: 'CSS',
+                        occurrences: 23,
+                        successRate: 95,
+                        trending: false
+                    }
+                ];
+
+                tbody.innerHTML = patterns.map(pattern => `
+                    <tr>
+                        <td>${pattern.id}</td>
+                        <td><span class="badge badge-info">${pattern.language}</span></td>
+                        <td>${pattern.occurrences}</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${pattern.successRate}%"></div>
+                            </div>
+                            ${pattern.successRate}%
+                        </td>
+                        <td>
+                            ${pattern.trending ? '<span class="badge badge-warning">🔥 Trending</span>' : '<span class="badge badge-info">Stable</span>'}
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" onclick="viewPatternDetails('${pattern.id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        // Load solutions data
+        function loadSolutionsData() {
+            const tbody = document.getElementById('solutionsTable');
+            
+            setTimeout(() => {
+                const solutions = [
+                    {
+                        id: 'html_unclosed_tag_fix_1',
+                        language: 'HTML',
+                        description: 'Add missing closing tag',
+                        successRate: 92,
+                        applications: 45,
+                        autoApply: true
+                    },
+                    {
+                        id: 'js_semicolon_fix_1',
+                        language: 'JavaScript',
+                        description: 'Add missing semicolon',
+                        successRate: 98,
+                        applications: 78,
+                        autoApply: true
+                    }
+                ];
+
+                tbody.innerHTML = solutions.map(solution => `
+                    <tr>
+                        <td>${solution.id}</td>
+                        <td><span class="badge badge-info">${solution.language}</span></td>
+                        <td>${solution.description}</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${solution.successRate}%"></div>
+                            </div>
+                            ${solution.successRate}%
+                        </td>
+                        <td>${solution.applications}</td>
+                        <td>
+                            <span class="badge ${solution.autoApply ? 'badge-success' : 'badge-warning'}">
+                                ${solution.autoApply ? 'Enabled' : 'Manual'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" onclick="viewSolutionDetails('${solution.id}')">Details</button>
+                            <button class="btn btn-warning" onclick="toggleAutoApply('${solution.id}', ${!solution.autoApply})">
+                                ${solution.autoApply ? 'Disable' : 'Enable'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        // Load templates data
+        function loadTemplatesData() {
+            document.getElementById('totalTemplates').textContent = '12';
+            document.getElementById('redundantSolutions').textContent = '5';
+            
+            const tbody = document.getElementById('templatesTable');
+            setTimeout(() => {
+                const templates = [
+                    {
+                        id: 'template_html_unclosed_tag_20241117_a1b2c3d4',
+                        language: 'HTML',
+                        pattern: 'html_unclosed_tag',
+                        confidence: 0.89,
+                        usageCount: 15
+                    },
+                    {
+                        id: 'template_js_semicolon_20241117_e5f6g7h8',
+                        language: 'JavaScript',
+                        pattern: 'js_missing_semicolon',
+                        confidence: 0.95,
+                        usageCount: 23
+                    }
+                ];
+
+                tbody.innerHTML = templates.map(template => `
+                    <tr>
+                        <td>${template.id}</td>
+                        <td><span class="badge badge-info">${template.language}</span></td>
+                        <td>${template.pattern}</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${template.confidence * 100}%"></div>
+                            </div>
+                            ${Math.round(template.confidence * 100)}%
+                        </td>
+                        <td>${template.usageCount}</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="viewTemplateDetails('${template.id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        // Load backups data
+        function loadBackupsData() {
+            const tbody = document.getElementById('backupsTable');
+            
+            setTimeout(() => {
+                const backups = [
+                    {
+                        id: 'Header_20241117_143215_a1b2c3d4',
+                        originalFile: 'src/components/Header.js',
+                        created: '2024-11-17 14:32:15',
+                        size: '2.3 KB',
+                        solutionId: 'js_semicolon_fix_1'
+                    },
+                    {
+                        id: 'main_20241117_142803_e5f6g7h8',
+                        originalFile: 'styles/main.css',
+                        created: '2024-11-17 14:28:03',
+                        size: '5.7 KB',
+                        solutionId: 'css_semicolon_fix_1'
+                    }
+                ];
+
+                tbody.innerHTML = backups.map(backup => `
+                    <tr>
+                        <td>${backup.id}</td>
+                        <td>${backup.originalFile}</td>
+                        <td>${backup.created}</td>
+                        <td>${backup.size}</td>
+                        <td>${backup.solutionId}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="rollbackFromBackup('${backup.id}')">Rollback</button>
+                            <button class="btn btn-danger" onclick="deleteBackup('${backup.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        // Load logs data
+        function loadLogsData() {
+            const tbody = document.getElementById('logsTable');
+            
+            setTimeout(() => {
+                const logs = [
+                    {
+                        timestamp: '2024-11-17 14:32:15',
+                        level: 'INFO',
+                        component: 'SolutionApplier',
+                        message: 'Successfully applied solution js_semicolon_fix_1',
+                        details: 'src/components/Header.js'
+                    },
+                    {
+                        timestamp: '2024-11-17 14:28:03',
+                        level: 'INFO',
+                        component: 'PatternRecognition',
+                        message: 'Detected css_missing_semicolon pattern',
+                        details: 'styles/main.css:45'
+                    },
+                    {
+                        timestamp: '2024-11-17 14:25:47',
+                        level: 'ERROR',
+                        component: 'SolutionApplier',
+                        message: 'Failed to apply solution html_tag_fix_1',
+                        details: 'Permission denied: index.html'
+                    }
+                ];
+
+                tbody.innerHTML = logs.map(log => `
+                    <tr>
+                        <td>${log.timestamp}</td>
+                        <td>
+                            <span class="badge ${getBadgeClass(log.level)}">${log.level}</span>
+                        </td>
+                        <td>${log.component}</td>
+                        <td>${log.message}</td>
+                        <td>${log.details}</td>
+                    </tr>
+                `).join('');
+            }, 300);
+        }
+
+        // Helper function for log level badges
+        function getBadgeClass(level) {
+            switch(level) {
+                case 'ERROR': return 'badge-danger';
+                case 'WARNING': return 'badge-warning';
+                case 'INFO': return 'badge-info';
+                default: return 'badge-info';
+            }
+        }
+
+        // Load dashboard data (called on initialization)
+        function loadDashboardData() {
+            loadOverviewData();
+        }
+
+        // Auto refresh functionality
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (currentSection === 'overview') {
+                    loadRecentActivity();
+                }
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        // Action functions
+        function rollback(filename) {
+            showNotification(`Rolling back changes to ${filename}...`, 'warning');
+            // In real implementation, this would make an API call
+            setTimeout(() => {
+                showNotification(`Successfully rolled back ${filename}`, 'success');
+                loadRecentActivity();
+            }, 1000);
+        }
+
+        function viewDetails(patternId) {
+            showNotification(`Loading details for ${patternId}...`, 'info');
+        }
+
+        function viewSolutionDetails(solutionId) {
+            document.getElementById('modalTitle').textContent = `Solution: ${solutionId}`;
+            document.getElementById('modalContent').innerHTML = `
+                <div class="form-group">
+                    <label>Solution ID:</label>
+                    <p>${solutionId}</p>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <p>Automatically add missing semicolons in JavaScript code</p>
+                </div>
+                <div class="form-group">
+                    <label>Template:</label>
+                    <pre style="background: #f8f9fa; padding: 1rem; border-radius: 5px; overflow-x: auto;">
+if (line.trim() && !line.trim().endsWith(';') && !line.trim().endsWith('{') && !line.trim().endsWith('}')) {
+    line += ';';
+}
+                    </pre>
+                </div>
+                <div class="form-group">
+                    <label>Success Rate:</label>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 98%"></div>
+                    </div>
+                    <p>98% (78 successful out of 80 applications)</p>
+                </div>
+            `;
+            document.getElementById('solutionModal').style.display = 'block';
+        }
+
+        function closeSolutionModal() {
+            document.getElementById('solutionModal').style.display = 'none';
+        }
+
+        function toggleAutoApply(solutionId, enable) {
+            const action = enable ? 'enable' : 'disable';
+            showNotification(`${action}d auto-apply for ${solutionId}`, 'success');
+            loadSolutionsData();
+        }
+
+        function refreshPatterns() {
+            showNotification('Refreshing error patterns...', 'info');
+            loadPatternsData();
+        }
+
+        function exportSolutions() {
+            showNotification('Exporting solutions archive...', 'info');
+            // In real implementation, this would trigger a download
+            setTimeout(() => {
+                showNotification('Solutions exported successfully', 'success');
+            }, 1000);
+        }
+
+        function generateTemplates() {
+            showNotification('Generating templates from similar solutions...', 'info');
+            setTimeout(() => {
+                showNotification('Generated 3 new templates', 'success');
+                loadTemplatesData();
+            }, 2000);
+        }
+
+        function cleanupBackups() {
+            showNotification('Cleaning up old backup files...', 'warning');
+            setTimeout(() => {
+                showNotification('Cleaned up 5 old backup files', 'success');
+                loadBackupsData();
+            }, 1500);
+        }
+
+        function refreshLogs() {
+            showNotification('Refreshing activity logs...', 'info');
+            loadLogsData();
+        }
+
+        function rollbackFromBackup(backupId) {
+            showNotification(`Rolling back from backup ${backupId}...`, 'warning');
+            setTimeout(() => {
+                showNotification('File restored from backup successfully', 'success');
+            }, 1000);
+        }
+
+        function deleteBackup(backupId) {
+            if (confirm('Are you sure you want to delete this backup?')) {
+                showNotification(`Deleting backup ${backupId}...`, 'warning');
+                setTimeout(() => {
+                    showNotification('Backup deleted successfully', 'success');
+                    loadBackupsData();
+                }, 500);
+            }
+        }
+
+        // Settings functions
+        function loadSettings() {
+            // Load current settings (in real implementation, from API)
+            document.getElementById('autoApplyFixes').value = 'false';
+            document.getElementById('backupRetention').value = '7';
+            document.getElementById('maxTempEntries').value = '1000';
+            document.getElementById('watchPatterns').value = '*.html,*.css,*.js,*.py,*.json';
+        }
+
+        function resetSettings() {
+            if (confirm('Reset all settings to defaults?')) {
+                loadSettings();
+                showNotification('Settings reset to defaults', 'success');
+            }
+        }
+
+        // Settings form submission
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showNotification('Settings saved successfully', 'success');
+        });
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('solutionModal');
+            if (event.target === modal) {
+                closeSolutionModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+{
+  "timestamp": "2025-11-17 03:40:02",
+  "summary": {
+    "total_tests": 28,
+    "passed_tests": 21,
+    "failed_tests": 7,
+    "success_rate": 75.0
+  },
+  "test_results": [
+    {
+      "test": "Environment Setup",
+      "passed": true,
+      "message": "Created workspace at C:\\Users\\moore\\AppData\\Local\\Temp\\quickfix_test_s3hugkey\\test_workspace"
+    },
+    {
+      "test": "Pattern '*.html'",
+      "passed": true,
+      "message": "Found 1 matches"
+    },
+    {
+      "test": "Pattern '**/*.js'",
+      "passed": true,
+      "message": "Found 1 matches"
+    },
+    {
+      "test": "Pattern 'test.*'",
+      "passed": true,
+      "message": "Found 4 matches"
+    },
+    {
+      "test": "Pattern '*.{html,css,js}'",
+      "passed": true,
+      "message": "Found 0 matches"
+    },
+    {
+      "test": "Pattern '**/test_*.py'",
+      "passed": true,
+      "message": "Found 1 matches"
+    },
+    {
+      "test": "Pattern Configuration",
+      "passed": true,
+      "message": "Patterns configured successfully"
+    },
+    {
+      "test": "Watch Mode Configuration",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "test": "Start File Watching",
+      "passed": null,
+      "message": ""
+    },
+    {
+      "test": "Diff Creation",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "test": "Diff Statistics",
+      "passed": true,
+      "message": "Added: 3, Removed: 3, Similarity: 75.2%"
+    },
+    {
+      "test": "HTML Diff Generation",
+      "passed": false,
+      "message": "Generated 5727 chars"
+    },
+    {
+      "test": "JSON Diff Generation",
+      "passed": true,
+      "message": ""
+    },
+    {
+      "test": "Enhanced Diff Test",
+      "passed": false,
+      "message": "Error: all arguments must be str, not: None"
+    },
+    {
+      "test": "GET /api/overview",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "GET /api/recent-activity",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "GET /api/patterns",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "GET /api/solutions",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "GET /api/settings",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "GET /api/watch/status",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "POST /api/watch/start",
+      "passed": false,
+      "message": "Status: 500"
+    },
+    {
+      "test": "POST /api/watch/stop",
+      "passed": false,
+      "message": "Status: 500"
+    },
+    {
+      "test": "POST /api/diff/files",
+      "passed": false,
+      "message": "Status: 400"
+    },
+    {
+      "test": "GET /api/diff/list",
+      "passed": true,
+      "message": "Status: 200"
+    },
+    {
+      "test": "Workspace Analysis",
+      "passed": true,
+      "message": "Found 4 patterns"
+    },
+    {
+      "test": "Solution Retrieval",
+      "passed": true,
+      "message": "Found 0 solutions"
+    },
+    {
+      "test": "Integration Workflow Test",
+      "passed": false,
+      "message": "Error: 'TemplateSystemManager' object has no attribute '_generate_templates_from_archive'"
+    },
+    {
+      "test": "Environment Cleanup",
+      "passed": true,
+      "message": "Temporary files cleaned up"
+    }
+  ],
+  "environment": {
+    "workspace_path": "C:\\Users\\moore\\AppData\\Local\\Temp\\quickfix_test_s3hugkey\\test_workspace",
+    "temp_directory": "C:\\Users\\moore\\AppData\\Local\\Temp\\quickfix_test_s3hugkey",
+    "python_version": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+    "os_platform": "nt"
+  }
+}
