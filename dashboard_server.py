@@ -25,6 +25,10 @@ from temp_log_manager import TempLogManager
 from template_system import TemplateSystemManager
 from solution_applier import SolutionApplier
 from enhanced_diff_system import DiffManager, EnhancedDiffGenerator
+from smart_pattern_learning import SmartPatternLearner
+from browser_integration import BrowserIntegration
+from team_collaboration import TeamCollaboration
+from predictive_analysis import PredictiveAnalyzer
 
 app = Flask(__name__)
 CORS(app)
@@ -51,6 +55,16 @@ class DashboardServer:
             master_archive=self.master_archive
         )
         self.diff_manager = DiffManager(data_dir=self.base_dir / "data")
+
+        # Phase 2-4: New feature modules
+        data_dir_str = str(self.base_dir / "data")
+        self.pattern_learner = SmartPatternLearner(data_dir=data_dir_str)
+        self.browser_analyzer = BrowserIntegration(report_dir=data_dir_str)
+        self.team_collab = TeamCollaboration(
+            collab_dir=data_dir_str,
+            current_user="local_user",
+        )
+        self.predictive_analyzer = PredictiveAnalyzer(history_dir=data_dir_str)
         
         # Configuration
         self.config = {
@@ -762,6 +776,335 @@ def api_watch_status():
         
     except Exception as e:
         logger.error(f"Error getting watch status: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# Smart Pattern Learning API  (Phase 2)
+# ============================================================
+
+@app.route('/api/learning/analyse', methods=['POST'])
+def api_learning_analyse():
+    """Analyse a code snippet and update the pattern learner."""
+    try:
+        data = request.json or {}
+        code = data.get('code', '')
+        language = data.get('language', 'JavaScript')
+        file_path = data.get('file_path', '')
+        if not code:
+            return jsonify({'error': 'code is required'}), 400
+        updated = dashboard_server.pattern_learner.analyse_code_snippet(code, language, file_path)
+        return jsonify({'status': 'success', 'patterns_updated': updated})
+    except Exception as e:
+        logger.error(f"Error in learning/analyse: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/learning/patterns')
+def api_learning_patterns():
+    """Return all learned patterns."""
+    try:
+        lang = request.args.get('language')
+        min_conf = request.args.get('min_confidence', type=float)
+        if lang:
+            patterns = dashboard_server.pattern_learner.get_suggestions(lang, min_conf)
+        else:
+            patterns = dashboard_server.pattern_learner.get_all_patterns()
+            if min_conf is not None:
+                patterns = [p for p in patterns if p.confidence >= min_conf]
+        return jsonify({'patterns': [p.to_dict() for p in patterns]})
+    except Exception as e:
+        logger.error(f"Error in learning/patterns: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/learning/feedback', methods=['POST'])
+def api_learning_feedback():
+    """Record user feedback for a learned pattern."""
+    try:
+        data = request.json or {}
+        pattern_id = data.get('pattern_id', '')
+        file_path = data.get('file_path', '')
+        was_correct = bool(data.get('was_correct', True))
+        suggested_fix = data.get('suggested_fix')
+        notes = data.get('notes', '')
+        if not pattern_id:
+            return jsonify({'error': 'pattern_id is required'}), 400
+        updated = dashboard_server.pattern_learner.record_feedback(
+            pattern_id, file_path, was_correct, suggested_fix, notes
+        )
+        return jsonify({'status': 'success', 'pattern_updated': updated})
+    except Exception as e:
+        logger.error(f"Error in learning/feedback: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/learning/stats')
+def api_learning_stats():
+    """Return learning system statistics."""
+    try:
+        stats = dashboard_server.pattern_learner.get_learning_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error in learning/stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# Browser Integration API  (Phase 3)
+# ============================================================
+
+@app.route('/api/browser/analyse', methods=['POST'])
+def api_browser_analyse():
+    """Analyse content for browser-compatibility issues."""
+    try:
+        data = request.json or {}
+        content = data.get('content', '')
+        file_type = data.get('file_type', 'html')
+        source_name = data.get('source_name', '<inline>')
+        if not content:
+            return jsonify({'error': 'content is required'}), 400
+        result = dashboard_server.browser_analyzer.analyse_content(content, file_type, source_name)
+        return jsonify(result.to_dict())
+    except Exception as e:
+        logger.error(f"Error in browser/analyse: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/browser/analyse-file', methods=['POST'])
+def api_browser_analyse_file():
+    """Analyse a workspace file for browser-compatibility issues."""
+    try:
+        data = request.json or {}
+        file_path = data.get('file_path', '')
+        if not file_path:
+            return jsonify({'error': 'file_path is required'}), 400
+        result = dashboard_server.browser_analyzer.analyse_file(file_path)
+        return jsonify(result.to_dict())
+    except FileNotFoundError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        logger.error(f"Error in browser/analyse-file: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# Team Collaboration API  (Phase 3)
+# ============================================================
+
+@app.route('/api/collab/members', methods=['GET'])
+def api_collab_members():
+    """List all registered team members."""
+    try:
+        members = dashboard_server.team_collab.list_members()
+        return jsonify({'members': [m.to_dict() for m in members]})
+    except Exception as e:
+        logger.error(f"Error in collab/members: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/members/register', methods=['POST'])
+def api_collab_register():
+    """Register a new team member."""
+    try:
+        data = request.json or {}
+        username = data.get('username', '')
+        display_name = data.get('display_name', username)
+        role = data.get('role', 'contributor')
+        if not username:
+            return jsonify({'error': 'username is required'}), 400
+        member = dashboard_server.team_collab.register_member(username, display_name, role)
+        return jsonify({'status': 'success', 'member': member.to_dict()})
+    except Exception as e:
+        logger.error(f"Error in collab/register: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/solutions', methods=['GET'])
+def api_collab_solutions():
+    """Search shared solutions."""
+    try:
+        language = request.args.get('language')
+        query = request.args.get('q')
+        tags_raw = request.args.get('tags')
+        tags = tags_raw.split(',') if tags_raw else None
+        solutions = dashboard_server.team_collab.search_solutions(language=language, tags=tags, query=query)
+        return jsonify({'solutions': [s.to_dict() for s in solutions]})
+    except Exception as e:
+        logger.error(f"Error in collab/solutions: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/solutions/share', methods=['POST'])
+def api_collab_share():
+    """Share a new fix solution with the team."""
+    try:
+        data = request.json or {}
+        required = ['title', 'description', 'language', 'error_pattern', 'fix_code']
+        for field in required:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+        solution = dashboard_server.team_collab.share_solution(
+            title=data['title'],
+            description=data['description'],
+            language=data['language'],
+            error_pattern=data['error_pattern'],
+            fix_code=data['fix_code'],
+            tags=data.get('tags', []),
+            author=data.get('author'),
+        )
+        return jsonify({'status': 'success', 'solution': solution.to_dict()})
+    except Exception as e:
+        logger.error(f"Error in collab/share: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/solutions/<solution_id>/vote', methods=['POST'])
+def api_collab_vote(solution_id):
+    """Vote on a shared solution."""
+    try:
+        data = request.json or {}
+        upvote = bool(data.get('upvote', True))
+        updated = dashboard_server.team_collab.vote_solution(solution_id, upvote)
+        if not updated:
+            return jsonify({'error': 'Solution not found'}), 404
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logger.error(f"Error in collab/vote: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/solutions/<solution_id>/comments', methods=['GET'])
+def api_collab_get_comments(solution_id):
+    """Get comments for a solution."""
+    try:
+        comments = dashboard_server.team_collab.get_comments(solution_id)
+        return jsonify({'comments': [c.to_dict() for c in comments]})
+    except Exception as e:
+        logger.error(f"Error in collab/comments: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/solutions/<solution_id>/comments', methods=['POST'])
+def api_collab_add_comment(solution_id):
+    """Add a comment to a solution."""
+    try:
+        data = request.json or {}
+        content = data.get('content', '')
+        if not content:
+            return jsonify({'error': 'content is required'}), 400
+        comment = dashboard_server.team_collab.add_comment(
+            solution_id=solution_id,
+            content=content,
+            author=data.get('author'),
+            parent_comment_id=data.get('parent_comment_id'),
+        )
+        if comment is None:
+            return jsonify({'error': 'Solution not found'}), 404
+        return jsonify({'status': 'success', 'comment': comment.to_dict()})
+    except Exception as e:
+        logger.error(f"Error adding comment: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/activity')
+def api_collab_activity():
+    """Return the team activity feed."""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        feed = dashboard_server.team_collab.get_activity_feed(limit=limit)
+        return jsonify({'activity': [a.to_dict() for a in feed]})
+    except Exception as e:
+        logger.error(f"Error in collab/activity: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/collab/stats')
+def api_collab_stats():
+    """Return team collaboration statistics."""
+    try:
+        stats = dashboard_server.team_collab.get_team_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error in collab/stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# Predictive Analysis API  (Phase 4)
+# ============================================================
+
+@app.route('/api/predict/analyse', methods=['POST'])
+def api_predict_analyse():
+    """Run predictive analysis on a code snippet."""
+    try:
+        data = request.json or {}
+        content = data.get('content', '')
+        language = data.get('language', 'Python')
+        source_name = data.get('source_name', '<inline>')
+        if not content:
+            return jsonify({'error': 'content is required'}), 400
+        profile = dashboard_server.predictive_analyzer.analyse_content(content, language, source_name)
+        return jsonify(profile.to_dict())
+    except Exception as e:
+        logger.error(f"Error in predict/analyse: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/predict/analyse-file', methods=['POST'])
+def api_predict_analyse_file():
+    """Run predictive analysis on a workspace file."""
+    try:
+        data = request.json or {}
+        file_path = data.get('file_path', '')
+        if not file_path:
+            return jsonify({'error': 'file_path is required'}), 400
+        profile = dashboard_server.predictive_analyzer.analyse_file(file_path)
+        return jsonify(profile.to_dict())
+    except FileNotFoundError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        logger.error(f"Error in predict/analyse-file: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/predict/high-risk')
+def api_predict_high_risk():
+    """Return files identified as high-risk based on error history."""
+    try:
+        threshold = request.args.get('threshold', 0.6, type=float)
+        files = dashboard_server.predictive_analyzer.get_high_risk_files(threshold=threshold)
+        return jsonify({'high_risk_files': files})
+    except Exception as e:
+        logger.error(f"Error in predict/high-risk: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/predict/record-error', methods=['POST'])
+def api_predict_record_error():
+    """Record an error occurrence for history-based prediction."""
+    try:
+        data = request.json or {}
+        file_path = data.get('file_path', '')
+        error_type = data.get('error_type', 'unknown')
+        severity = data.get('severity', 'medium')
+        if not file_path:
+            return jsonify({'error': 'file_path is required'}), 400
+        dashboard_server.predictive_analyzer.record_error(file_path, error_type, severity)
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        logger.error(f"Error in predict/record-error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/predict/summary')
+def api_predict_summary():
+    """Return a high-level predictive analysis summary."""
+    try:
+        summary = dashboard_server.predictive_analyzer.get_summary()
+        return jsonify(summary)
+    except Exception as e:
+        logger.error(f"Error in predict/summary: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
