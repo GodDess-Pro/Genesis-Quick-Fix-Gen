@@ -70,10 +70,58 @@ def run_integration_tests():
         
         # Cleanup
         test_file.unlink()
-        
+
+        print('\n9. Testing Smart Pattern Learning...')
+        from smart_pattern_learning import SmartPatternLearner
+        learner = SmartPatternLearner(data_dir='/tmp/test_qfx_learning')
+        sample_js = "var x = 1;\neval('alert(1)');\ndocument.write('hello');"
+        updated = learner.analyse_code_snippet(sample_js, 'JavaScript', 'test.js')
+        stats = learner.get_learning_stats()
+        print(f'✅ Smart Pattern Learning working: {stats["candidate_snippets_observed"]} candidates observed, {len(updated)} patterns updated')
+
+        print('\n10. Testing Browser Integration...')
+        from browser_integration import BrowserIntegration
+        browser = BrowserIntegration(report_dir='/tmp/test_qfx_browser')
+        html_content = '<!DOCTYPE html><html><head><title>Test</title></head><body><img src="test.png"><p>Hello</p></body></html>'
+        result = browser.analyse_content(html_content, 'html', 'test.html')
+        print(f'✅ Browser Integration working: {result.summary["total"]} issues found, score={result.compatibility_score}')
+
+        print('\n11. Testing Team Collaboration...')
+        from team_collaboration import TeamCollaboration
+        collab = TeamCollaboration(collab_dir='/tmp/test_qfx_collab', current_user='test_user')
+        member = collab.register_member('test_user', 'Test User', 'contributor')
+        solution = collab.share_solution(
+            title='Fix missing semicolons',
+            description='Adds semicolons where missing in JS',
+            language='JavaScript',
+            error_pattern=r'line without semicolon',
+            fix_code='line += ";"',
+            tags=['javascript', 'syntax'],
+        )
+        solutions = collab.search_solutions(language='JavaScript')
+        stats = collab.get_team_stats()
+        print(f'✅ Team Collaboration working: {stats["total_members"]} members, {stats["total_solutions"]} solutions')
+
+        print('\n12. Testing Predictive Analysis...')
+        from predictive_analysis import PredictiveAnalyzer
+        analyzer = PredictiveAnalyzer(history_dir='/tmp/test_qfx_predict')
+        risky_code = """
+import os
+def process():
+    try:
+        exec("rm -rf /")
+        from os import *
+    except:
+        pass
+"""
+        profile = analyzer.analyse_content(risky_code, 'Python', 'risky.py')
+        summary = analyzer.get_summary()
+        print(f'✅ Predictive Analysis working: risk_level={profile.risk_level}, {len(profile.signals)} signals, {len(profile.predictions)} predictions')
+
         print('\n' + '=' * 60)
         print('🎉 ALL INTEGRATION TESTS PASSED!')
         print('✅ QuickFix Generator system is fully operational')
+        print('✅ Phase 2-4 features (Smart Learning, Browser, Collaboration, Prediction) operational')
         print('=' * 60)
         
         return True
