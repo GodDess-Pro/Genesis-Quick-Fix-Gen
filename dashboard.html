@@ -396,6 +396,18 @@
         #settings.hidden-section {
             display: none;
         }
+        #learning.hidden-section {
+            display: none;
+        }
+        #browser.hidden-section {
+            display: none;
+        }
+        #collab.hidden-section {
+            display: none;
+        }
+        #predict.hidden-section {
+            display: none;
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -517,6 +529,26 @@
                     <li class="nav-item">
                         <a href="#settings" class="nav-link" data-section="settings">
                             <i>⚙️</i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#learning" class="nav-link" data-section="learning">
+                            <i>🧠</i> Smart Learning
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#browser" class="nav-link" data-section="browser">
+                            <i>🌐</i> Browser Check
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#collab" class="nav-link" data-section="collab">
+                            <i>👥</i> Team Collab
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#predict" class="nav-link" data-section="predict">
+                            <i>🔮</i> Predictions
                         </a>
                     </li>
                 </ul>
@@ -808,6 +840,144 @@
                         <button type="submit" class="btn btn-primary">Save Settings</button>
                         <button type="button" class="btn btn-warning" onclick="resetSettings()">Reset to Defaults</button>
                     </form>
+                </div>
+            </div>
+
+            <!-- ===== Smart Pattern Learning Section ===== -->
+            <div id="learning" class="content-section hidden-section">
+                <h3>🧠 Smart Pattern Learning</h3>
+                <p style="margin-bottom:1rem;color:#555;">Analyse code to discover new error patterns automatically. The system learns from repeated observations and user feedback.</p>
+                <div class="card" style="margin-bottom:1rem;">
+                    <h4>Analyse Code Snippet</h4>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="learnLang">
+                            <option>JavaScript</option><option>Python</option>
+                            <option>HTML</option><option>CSS</option>
+                            <option>TypeScript</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Code</label>
+                        <textarea id="learnCode" rows="6" style="width:100%;font-family:monospace;padding:.5rem;" placeholder="Paste code here…"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="runLearningAnalysis()">Analyse &amp; Learn</button>
+                    <div id="learnResult" style="margin-top:.5rem;"></div>
+                </div>
+                <div class="card">
+                    <h4>Learned Patterns <button class="btn btn-sm" style="float:right" onclick="loadLearnedPatterns()">Refresh</button></h4>
+                    <div id="learnStats" style="margin-bottom:.5rem;color:#555;font-size:.9rem;"></div>
+                    <table style="width:100%;border-collapse:collapse;" id="learnedPatternsTable">
+                        <thead><tr style="background:#f0f0f0;">
+                            <th style="padding:.5rem;text-align:left;">ID</th>
+                            <th>Language</th><th>Confidence</th>
+                            <th>Occurrences</th><th>Description</th>
+                        </tr></thead>
+                        <tbody id="learnedPatternsBody"><tr><td colspan="5" style="padding:.5rem;color:#888;">Click Refresh to load patterns.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Browser Integration Section ===== -->
+            <div id="browser" class="content-section hidden-section">
+                <h3>🌐 Browser Compatibility Check</h3>
+                <p style="margin-bottom:1rem;color:#555;">Detect browser-compatibility, accessibility, and rendering issues in HTML, CSS, and JavaScript files.</p>
+                <div class="card" style="margin-bottom:1rem;">
+                    <h4>Analyse Content</h4>
+                    <div class="form-group">
+                        <label>File Type</label>
+                        <select id="browserFileType">
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea id="browserContent" rows="8" style="width:100%;font-family:monospace;padding:.5rem;" placeholder="Paste HTML/CSS/JS here…"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="runBrowserAnalysis()">Run Analysis</button>
+                </div>
+                <div class="card" id="browserResultCard" style="display:none;">
+                    <h4>Results</h4>
+                    <div id="browserSummary" style="margin-bottom:.5rem;"></div>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead><tr style="background:#f0f0f0;">
+                            <th style="padding:.5rem;text-align:left;">Severity</th>
+                            <th>Type</th><th>Line</th><th>Description</th><th>Suggestion</th>
+                        </tr></thead>
+                        <tbody id="browserIssuesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Team Collaboration Section ===== -->
+            <div id="collab" class="content-section hidden-section">
+                <h3>👥 Team Collaboration</h3>
+                <p style="margin-bottom:1rem;color:#555;">Share fix solutions with your team, vote on solutions, and leave comments.</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                    <div class="card">
+                        <h4>Share a Solution</h4>
+                        <div class="form-group"><label>Title</label><input type="text" id="collabTitle" style="width:100%;padding:.4rem;" placeholder="Fix title"></div>
+                        <div class="form-group"><label>Language</label>
+                            <select id="collabLang" style="width:100%;">
+                                <option>JavaScript</option><option>Python</option>
+                                <option>HTML</option><option>CSS</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Description</label><textarea id="collabDesc" rows="2" style="width:100%;padding:.4rem;" placeholder="Describe what this fixes…"></textarea></div>
+                        <div class="form-group"><label>Error Pattern</label><input type="text" id="collabPattern" style="width:100%;padding:.4rem;" placeholder="e.g. var usage"></div>
+                        <div class="form-group"><label>Fix Code</label><textarea id="collabCode" rows="4" style="width:100%;font-family:monospace;padding:.4rem;" placeholder="Your fix…"></textarea></div>
+                        <button class="btn btn-primary" onclick="shareSolution()">Share</button>
+                        <div id="collabShareResult" style="margin-top:.5rem;"></div>
+                    </div>
+                    <div class="card">
+                        <h4>Team Stats</h4>
+                        <div id="collabStats" style="color:#555;">Loading…</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Shared Solutions <button class="btn btn-sm" style="float:right" onclick="loadCollabSolutions()">Refresh</button></h4>
+                    <div id="collabSolutionsList"><p style="color:#888;">Click Refresh to load solutions.</p></div>
+                </div>
+            </div>
+
+            <!-- ===== Predictive Analysis Section ===== -->
+            <div id="predict" class="content-section hidden-section">
+                <h3>🔮 Predictive Analysis</h3>
+                <p style="margin-bottom:1rem;color:#555;">Identify risky code before it causes errors. Analysis is based on code smells, complexity metrics, and error history.</p>
+                <div class="card" style="margin-bottom:1rem;">
+                    <h4>Analyse Code</h4>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="predictLang">
+                            <option>Python</option><option>JavaScript</option>
+                            <option>HTML</option><option>CSS</option><option>TypeScript</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Code</label>
+                        <textarea id="predictCode" rows="8" style="width:100%;font-family:monospace;padding:.5rem;" placeholder="Paste code to analyse for risk…"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="runPredictiveAnalysis()">Analyse Risk</button>
+                </div>
+                <div class="card" id="predictResultCard" style="display:none;">
+                    <h4>Risk Profile</h4>
+                    <div id="predictSummary" style="margin-bottom:.75rem;"></div>
+                    <h5>Predicted Issues</h5>
+                    <div id="predictIssuesList"></div>
+                    <h5 style="margin-top:.75rem;">Risk Signals</h5>
+                    <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+                        <thead><tr style="background:#f0f0f0;">
+                            <th style="padding:.4rem;text-align:left;">Type</th>
+                            <th>Severity</th><th>Line</th><th>Description</th><th>Remediation</th>
+                        </tr></thead>
+                        <tbody id="predictSignalsBody"></tbody>
+                    </table>
+                </div>
+                <div class="card" style="margin-top:1rem;">
+                    <h4>High-Risk File History <button class="btn btn-sm" style="float:right" onclick="loadHighRiskFiles()">Refresh</button></h4>
+                    <div id="predictHighRiskList"><p style="color:#888;">Click Refresh to load high-risk files.</p></div>
                 </div>
             </div>
         </main>
@@ -1411,6 +1581,233 @@ if (line.trim() && !line.trim().endsWith(';') && !line.trim().endsWith('{') && !
                 closeSolutionModal();
             }
         });
+
+        // ============================================================
+        // Smart Pattern Learning
+        // ============================================================
+        async function runLearningAnalysis() {
+            const code = document.getElementById('learnCode').value.trim();
+            const lang = document.getElementById('learnLang').value;
+            const resultEl = document.getElementById('learnResult');
+            if (!code) { resultEl.innerHTML = '<span style="color:red;">Please enter code.</span>'; return; }
+            resultEl.innerHTML = 'Analysing…';
+            try {
+                const resp = await fetch('/api/learning/analyse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code, language: lang})
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    resultEl.innerHTML = `<span style="color:green;">✅ Done. ${data.patterns_updated.length} pattern(s) updated.</span>`;
+                    loadLearnedPatterns();
+                } else {
+                    resultEl.innerHTML = `<span style="color:red;">Error: ${data.error}</span>`;
+                }
+            } catch(e) { resultEl.innerHTML = `<span style="color:red;">Request failed: ${e.message}</span>`; }
+        }
+
+        async function loadLearnedPatterns() {
+            try {
+                const [pResp, sResp] = await Promise.all([
+                    fetch('/api/learning/patterns'),
+                    fetch('/api/learning/stats')
+                ]);
+                const pData = await pResp.json();
+                const sData = await sResp.json();
+                document.getElementById('learnStats').textContent =
+                    `${sData.total_learned_patterns} patterns learned · avg confidence ${(sData.average_confidence*100).toFixed(1)}% · ${sData.total_feedback_entries} feedback entries`;
+                const tbody = document.getElementById('learnedPatternsBody');
+                if (!pData.patterns || pData.patterns.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:.5rem;color:#888;">No patterns learned yet. Analyse some code first.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = pData.patterns.map(p => `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:.4rem;font-size:.8rem;font-family:monospace;">${p.pattern_id}</td>
+                        <td style="padding:.4rem;">${p.language}</td>
+                        <td style="padding:.4rem;">
+                            <div style="background:#eee;border-radius:4px;height:8px;width:80px;display:inline-block;vertical-align:middle;">
+                                <div style="background:#3498db;height:100%;width:${(p.confidence*100).toFixed(0)}%;border-radius:4px;"></div>
+                            </div>
+                            ${(p.confidence*100).toFixed(0)}%
+                        </td>
+                        <td style="padding:.4rem;">${p.occurrence_count}</td>
+                        <td style="padding:.4rem;font-size:.85rem;">${p.description}</td>
+                    </tr>`).join('');
+            } catch(e) { console.error('loadLearnedPatterns error:', e); }
+        }
+
+        // ============================================================
+        // Browser Integration
+        // ============================================================
+        async function runBrowserAnalysis() {
+            const content = document.getElementById('browserContent').value.trim();
+            const fileType = document.getElementById('browserFileType').value;
+            if (!content) return;
+            try {
+                const resp = await fetch('/api/browser/analyse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content, file_type: fileType, source_name: `inline.${fileType}`})
+                });
+                const data = await resp.json();
+                const card = document.getElementById('browserResultCard');
+                card.style.display = 'block';
+                const sc = data.compatibility_score !== undefined ? (data.compatibility_score * 100).toFixed(0) : 'N/A';
+                document.getElementById('browserSummary').innerHTML =
+                    `<strong>Compatibility Score: ${sc}%</strong> &nbsp;|&nbsp; ` +
+                    `Total issues: ${data.summary?.total ?? 0} &nbsp;` +
+                    `(critical: ${data.summary?.critical ?? 0}, high: ${data.summary?.high ?? 0}, ` +
+                    `medium: ${data.summary?.medium ?? 0}, low: ${data.summary?.low ?? 0})`;
+                const sevColor = {critical:'#e74c3c', high:'#e67e22', medium:'#f39c12', low:'#3498db'};
+                document.getElementById('browserIssuesBody').innerHTML = (data.issues || []).map(i => `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:.4rem;"><span style="color:${sevColor[i.severity]||'#555'};font-weight:bold;">${i.severity}</span></td>
+                        <td style="padding:.4rem;">${i.issue_type}</td>
+                        <td style="padding:.4rem;">${i.line_number || '-'}</td>
+                        <td style="padding:.4rem;font-size:.85rem;">${i.description}</td>
+                        <td style="padding:.4rem;font-size:.82rem;color:#555;">${i.suggestion}</td>
+                    </tr>`).join('') || '<tr><td colspan="5" style="padding:.5rem;color:green;">No issues found 🎉</td></tr>';
+            } catch(e) { console.error('runBrowserAnalysis error:', e); }
+        }
+
+        // ============================================================
+        // Team Collaboration
+        // ============================================================
+        async function shareSolution() {
+            const body = {
+                title: document.getElementById('collabTitle').value.trim(),
+                description: document.getElementById('collabDesc').value.trim(),
+                language: document.getElementById('collabLang').value,
+                error_pattern: document.getElementById('collabPattern').value.trim(),
+                fix_code: document.getElementById('collabCode').value.trim(),
+            };
+            const resultEl = document.getElementById('collabShareResult');
+            if (!body.title || !body.fix_code) { resultEl.innerHTML = '<span style="color:red;">Title and Fix Code are required.</span>'; return; }
+            try {
+                const resp = await fetch('/api/collab/solutions/share', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    resultEl.innerHTML = '<span style="color:green;">✅ Solution shared!</span>';
+                    loadCollabSolutions();
+                    loadCollabStats();
+                } else {
+                    resultEl.innerHTML = `<span style="color:red;">Error: ${data.error}</span>`;
+                }
+            } catch(e) { resultEl.innerHTML = `<span style="color:red;">${e.message}</span>`; }
+        }
+
+        async function loadCollabSolutions() {
+            try {
+                const resp = await fetch('/api/collab/solutions');
+                const data = await resp.json();
+                const container = document.getElementById('collabSolutionsList');
+                if (!data.solutions || data.solutions.length === 0) {
+                    container.innerHTML = '<p style="color:#888;">No solutions shared yet.</p>'; return;
+                }
+                container.innerHTML = data.solutions.map(s => `
+                    <div style="border:1px solid #ddd;border-radius:6px;padding:.75rem;margin-bottom:.5rem;">
+                        <strong>${s.title}</strong>
+                        <span style="background:#3498db;color:#fff;border-radius:4px;padding:.1rem .4rem;font-size:.75rem;margin-left:.5rem;">${s.language}</span>
+                        ${s.is_verified ? '<span style="background:#27ae60;color:#fff;border-radius:4px;padding:.1rem .4rem;font-size:.75rem;margin-left:.3rem;">✓ Verified</span>' : ''}
+                        <p style="color:#555;margin:.3rem 0;">${s.description}</p>
+                        <code style="font-size:.8rem;background:#f4f4f4;padding:.3rem;display:block;border-radius:4px;">${s.fix_code.substring(0,120)}${s.fix_code.length>120?'…':''}</code>
+                        <div style="margin-top:.4rem;font-size:.8rem;color:#777;">
+                            👤 ${s.author} &nbsp;|&nbsp; 👍 ${s.upvotes} &nbsp;|&nbsp; 🔧 used ${s.usage_count}×
+                            &nbsp;<button class="btn btn-sm" onclick="voteCollab('${s.solution_id}',true)">👍 Upvote</button>
+                        </div>
+                    </div>`).join('');
+            } catch(e) { console.error('loadCollabSolutions error:', e); }
+        }
+
+        async function voteCollab(solutionId, upvote) {
+            try {
+                await fetch(`/api/collab/solutions/${solutionId}/vote`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({upvote})
+                });
+                loadCollabSolutions();
+            } catch(e) { console.error('voteCollab error:', e); }
+        }
+
+        async function loadCollabStats() {
+            try {
+                const resp = await fetch('/api/collab/stats');
+                const s = await resp.json();
+                document.getElementById('collabStats').innerHTML = `
+                    <p>👥 Members: <strong>${s.total_members}</strong></p>
+                    <p>🔧 Solutions shared: <strong>${s.total_solutions}</strong></p>
+                    <p>✅ Verified: <strong>${s.verified_solutions}</strong></p>
+                    <p>💬 Comments: <strong>${s.total_comments}</strong></p>
+                    ${s.top_contributor ? `<p>🏆 Top contributor: <strong>${s.top_contributor}</strong></p>` : ''}`;
+            } catch(e) { console.error('loadCollabStats error:', e); }
+        }
+
+        // ============================================================
+        // Predictive Analysis
+        // ============================================================
+        async function runPredictiveAnalysis() {
+            const content = document.getElementById('predictCode').value.trim();
+            const language = document.getElementById('predictLang').value;
+            if (!content) return;
+            try {
+                const resp = await fetch('/api/predict/analyse', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content, language, source_name: `inline.${language.toLowerCase()}`})
+                });
+                const data = await resp.json();
+                document.getElementById('predictResultCard').style.display = 'block';
+                const riskColor = {critical:'#e74c3c', high:'#e67e22', medium:'#f39c12', low:'#3498db', minimal:'#27ae60'};
+                const rl = data.risk_level || 'minimal';
+                document.getElementById('predictSummary').innerHTML =
+                    `<span style="color:${riskColor[rl]||'#555'};font-size:1.1rem;font-weight:bold;">Risk Level: ${rl.toUpperCase()}</span>
+                     &nbsp;| Score: ${((data.overall_risk_score||0)*100).toFixed(0)}%
+                     &nbsp;| Signals: ${(data.signals||[]).length}
+                     &nbsp;| Lines: ${data.metrics?.total_lines ?? '-'}`;
+
+                document.getElementById('predictIssuesList').innerHTML = (data.predictions||[]).length
+                    ? (data.predictions||[]).map(p => `
+                        <div style="border-left:4px solid ${riskColor[p.impact]||'#ccc'};padding:.5rem .75rem;margin:.3rem 0;background:#fafafa;border-radius:0 4px 4px 0;">
+                            <strong>${p.title}</strong> &nbsp;
+                            <span style="font-size:.8rem;color:#777;">prob ${(p.probability*100).toFixed(0)}% · confidence ${(p.confidence*100).toFixed(0)}%</span>
+                            <p style="margin:.2rem 0;font-size:.85rem;color:#555;">${p.description}</p>
+                            <ul style="margin:.2rem 0 0 1rem;font-size:.82rem;color:#666;">${(p.suggested_actions||[]).map(a=>`<li>${a}</li>`).join('')}</ul>
+                        </div>`).join('')
+                    : '<p style="color:green;">No predicted issues 🎉</p>';
+
+                document.getElementById('predictSignalsBody').innerHTML = (data.signals||[]).map(s => `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:.4rem;">${s.signal_type}</td>
+                        <td style="padding:.4rem;color:${riskColor[s.severity]||'#555'};">${s.severity}</td>
+                        <td style="padding:.4rem;">${s.line_number || '-'}</td>
+                        <td style="padding:.4rem;font-size:.83rem;">${s.description}</td>
+                        <td style="padding:.4rem;font-size:.8rem;color:#555;">${s.remediation}</td>
+                    </tr>`).join('') || '<tr><td colspan="5" style="padding:.5rem;color:green;">No signals detected.</td></tr>';
+            } catch(e) { console.error('runPredictiveAnalysis error:', e); }
+        }
+
+        async function loadHighRiskFiles() {
+            try {
+                const resp = await fetch('/api/predict/high-risk');
+                const data = await resp.json();
+                const container = document.getElementById('predictHighRiskList');
+                if (!data.high_risk_files || data.high_risk_files.length === 0) {
+                    container.innerHTML = '<p style="color:green;">No high-risk files recorded 🎉</p>'; return;
+                }
+                container.innerHTML = '<ul style="margin:0;padding-left:1.2rem;">' +
+                    data.high_risk_files.map(f => `<li style="padding:.2rem 0;">${f}</li>`).join('') + '</ul>';
+            } catch(e) { console.error('loadHighRiskFiles error:', e); }
+        }
+
+        // Load collab stats on page load
+        document.addEventListener('DOMContentLoaded', () => { loadCollabStats(); });
     </script>
 </body>
 </html>
