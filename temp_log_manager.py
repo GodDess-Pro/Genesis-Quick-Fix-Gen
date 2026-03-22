@@ -28,19 +28,44 @@ class TempLogEntry:
     timestamp: datetime.datetime
     file_path: str
     language: str
-    error_pattern_id: str
-    error_description: str
-    severity: str
-    line_number: int
-    context: str
-    solutions_attempted: List[Dict[str, Any]]
-    successful_solution: Optional[str]
-    resolution_time: Optional[datetime.datetime]
-    user_feedback: Optional[str]
+    severity: str = "medium"
+    line_number: int = 0
+    # data (e.g. from core_generator) while remaining backward-compatible.
+    error_pattern_id: str = ""
+    error_description: str = ""
+    context: str = ""
+    solutions_attempted: List[Dict[str, Any]] = None
+    successful_solution: Optional[str] = None
+    resolution_time: Optional[datetime.datetime] = None
+    user_feedback: Optional[str] = None
     occurrence_count: int = 1
     last_seen: Optional[datetime.datetime] = None
     auto_applied: bool = False
     requires_manual_review: bool = False
+    # Aliases used by core_generator when constructing entries
+    pattern_id: Optional[str] = None
+    original_content: Optional[str] = None
+    confidence: float = 0.0
+    # Solution-application tracking fields set by core_generator after creation
+    solution_applied: bool = False
+    solution_id: Optional[str] = None
+    application_success: bool = False
+    backup_created: bool = False
+    application_timestamp: Optional[datetime.datetime] = None
+
+    def __post_init__(self):
+        # Initialise mutable default
+        if self.solutions_attempted is None:
+            self.solutions_attempted = []
+        # Sync alias fields so both names refer to the same value
+        if self.pattern_id and not self.error_pattern_id:
+            self.error_pattern_id = self.pattern_id
+        elif self.error_pattern_id and not self.pattern_id:
+            self.pattern_id = self.error_pattern_id
+        if self.original_content and not self.context:
+            self.context = self.original_content
+        elif self.context and not self.original_content:
+            self.original_content = self.context
 
 class TempLogManager:
     """Manages temporary error logs with auto-cleanup"""
@@ -72,13 +97,18 @@ class TempLogManager:
                     
                 # Convert timestamps back to datetime objects
                 logs = []
+                _dt_fields = {
+                    'timestamp', 'resolution_time', 'last_seen',
+                    'application_timestamp',
+                }
+                _valid_fields = {f.name for f in TempLogEntry.__dataclass_fields__.values()}
                 for entry_data in data.get('entries', []):
-                    entry_data['timestamp'] = datetime.datetime.fromisoformat(entry_data['timestamp'])
-                    if entry_data.get('resolution_time'):
-                        entry_data['resolution_time'] = datetime.datetime.fromisoformat(entry_data['resolution_time'])
-                    if entry_data.get('last_seen'):
-                        entry_data['last_seen'] = datetime.datetime.fromisoformat(entry_data['last_seen'])
-                    
+                    # Parse datetime strings
+                    for dt_key in _dt_fields:
+                        if entry_data.get(dt_key):
+                            entry_data[dt_key] = datetime.datetime.fromisoformat(entry_data[dt_key])
+                    # Drop unknown keys to stay forward/backward compatible
+                    entry_data = {k: v for k, v in entry_data.items() if k in _valid_fields}
                     logs.append(TempLogEntry(**entry_data))
                 
                 self.logs_by_language[language] = {
@@ -150,6 +180,34 @@ class TempLogManager:
         self._save_language_logs(language)
         return existing_entry.entry_id if existing_entry else entry_id
     
+    def add_entry(self, entry: 'TempLogEntry') -> str:
+        """Add a pre-built TempLogEntry to the log (used by core_generator)."""
+        language = entry.language
+        if language not in self.logs_by_language:
+            self.logs_by_language[language] = {
+                'entries': [],
+                'metadata': {'total_errors': 0, 'resolved_errors': 0},
+                'last_updated': datetime.datetime.now()
+            }
+        self.logs_by_language[language]['entries'].append(entry)
+        self.logs_by_language[language]['metadata']['total_errors'] += 1
+        self.logs_by_language[language]['last_updated'] = datetime.datetime.now()
+        self._save_language_logs(language)
+        return entry.entry_id
+
+    def update_entry(self, entry: 'TempLogEntry') -> None:
+        """Update an existing TempLogEntry in-place (used by core_generator)."""
+        language = entry.language
+        if language not in self.logs_by_language:
+            return
+        entries = self.logs_by_language[language]['entries']
+        for i, existing in enumerate(entries):
+            if existing.entry_id == entry.entry_id:
+                entries[i] = entry
+                self.logs_by_language[language]['last_updated'] = datetime.datetime.now()
+                self._save_language_logs(language)
+                return
+
     def record_solution_attempt(self, entry_id: str, solution_description: str, 
                                success: bool, applied_automatically: bool = False):
         """Record a solution attempt for an error"""

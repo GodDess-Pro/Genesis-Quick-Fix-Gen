@@ -6,9 +6,9 @@ Provides advanced version comparison, side-by-side viewing, and change highlight
 import difflib
 import json
 import html
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Union
+from typing import List, Dict, Any, Optional, Tuple, Union
 from dataclasses import dataclass, asdict
 from diff_match_patch import diff_match_patch
 import logging
@@ -239,6 +239,8 @@ class EnhancedDiffGenerator:
         
         # Calculate modified lines (pairs of add/remove)
         stats['lines_modified'] = min(stats['lines_added'], stats['lines_removed'])
+        # Alias used by some callers
+        stats['lines_changed'] = stats['lines_added'] + stats['lines_removed']
         
         return stats
     
@@ -251,17 +253,17 @@ class EnhancedDiffGenerator:
     <title>Diff: {old_file} vs {new_file}</title>
     <style>
         body {{ font-family: 'Courier New', monospace; margin: 0; padding: 20px; }}
-        .diff-container {{ display: flex; width: 100%; }}
-        .diff-side {{ width: 50%; border: 1px solid #ddd; }}
-        .diff-header {{ background: #f5f5f5; padding: 10px; font-weight: bold; border-bottom: 1px solid #ddd; }}
+        .stats {{ background: #e9ecef; padding: 10px; margin-bottom: 20px; border-radius: 5px; }}
+        table.diff {{ width: 100%; border-collapse: collapse; table-layout: fixed; }}
+        table.diff th {{ background: #f5f5f5; padding: 8px; border: 1px solid #ddd; font-weight: bold; width: 50%; }}
+        table.diff td {{ vertical-align: top; padding: 0; border: 1px solid #ddd; width: 50%; }}
         .line {{ display: flex; min-height: 20px; line-height: 20px; }}
-        .line-number {{ width: 60px; background: #f8f8f8; text-align: right; padding: 0 5px; color: #666; border-right: 1px solid #ddd; }}
-        .line-content {{ flex: 1; padding: 0 5px; white-space: pre-wrap; }}
+        .line-number {{ width: 50px; background: #f8f8f8; text-align: right; padding: 0 5px; color: #666; border-right: 1px solid #ddd; flex-shrink: 0; }}
+        .line-content {{ flex: 1; padding: 0 5px; white-space: pre-wrap; overflow-wrap: break-word; }}
         .added {{ background-color: #d4edda; }}
         .removed {{ background-color: #f8d7da; }}
         .modified {{ background-color: #fff3cd; }}
         .unchanged {{ background-color: #fff; }}
-        .stats {{ background: #e9ecef; padding: 10px; margin-bottom: 20px; border-radius: 5px; }}
         .highlight {{ background-color: #ffeb3b; }}
     </style>
 </head>
@@ -269,23 +271,26 @@ class EnhancedDiffGenerator:
     <h1>File Comparison</h1>
     <div class="stats">
         <strong>Statistics:</strong>
-        Lines Added: {lines_added} | 
-        Lines Removed: {lines_removed} | 
-        Lines Modified: {lines_modified} | 
-        Lines Unchanged: {lines_unchanged} | 
+        Lines Added: {lines_added} |
+        Lines Removed: {lines_removed} |
+        Lines Modified: {lines_modified} |
+        Lines Unchanged: {lines_unchanged} |
         Similarity: {similarity:.1%}
     </div>
-    
-    <div class="diff-container">
-        <div class="diff-side">
-            <div class="diff-header">{old_file} {old_version}</div>
-            {old_content}
-        </div>
-        <div class="diff-side">
-            <div class="diff-header">{new_file} {new_version}</div>
-            {new_content}
-        </div>
-    </div>
+    <table class="diff">
+        <thead>
+            <tr>
+                <th>{old_file} {old_version}</th>
+                <th>{new_file} {new_version}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{old_content}</td>
+                <td>{new_content}</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 </html>
         """
@@ -460,7 +465,11 @@ class DiffManager:
         logger.info(f"Diff saved as JSON: {json_path}")
         return json_path
     
-    def list_saved_diffs(self) -> List[Dict[str, any]]:
+    def list_diffs(self) -> List[Dict[str, Any]]:
+        """List all saved diff files (alias for list_saved_diffs)."""
+        return self.list_saved_diffs()
+
+    def list_saved_diffs(self) -> List[Dict[str, Any]]:
         """List all saved diff files"""
         diffs = []
         
@@ -491,9 +500,12 @@ class DiffManager:
         
         return diffs
     
-    def cleanup_old_diffs(self, max_age_days: int = 7) -> int:
+    def cleanup_old_diffs(self, max_age_days: int = 7, max_age_hours: Optional[int] = None) -> int:
         """Clean up old diff files"""
-        cutoff_date = datetime.now() - timedelta(days=max_age_days)
+        if max_age_hours is not None:
+            cutoff_date = datetime.now() - timedelta(hours=max_age_hours)
+        else:
+            cutoff_date = datetime.now() - timedelta(days=max_age_days)
         cleaned_count = 0
         
         for file_path in self.diffs_dir.glob("diff_*"):
@@ -510,4 +522,7 @@ class DiffManager:
     def compare_text(self, old_text: str, new_text: str, 
                     old_version: Optional[str] = None, new_version: Optional[str] = None) -> DiffResult:
         """Compare two text strings directly"""
-        return self.diff_generator.compare_text(old_text, new_text, old_version, new_version)
+        return self.diff_generator.compare_text(
+            old_text, new_text,
+            old_version=old_version, new_version=new_version
+        )

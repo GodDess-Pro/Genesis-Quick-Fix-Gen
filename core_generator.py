@@ -472,11 +472,11 @@ class QuickFixGenerator:
         """Start file system watching"""
         if self.is_watching:
             logger.warning("File watching already started")
-            return
+            return True
         
         if not self.config.file_watching_enabled:
             logger.info("File watching disabled in configuration")
-            return
+            return False
         
         self.file_handler = QuickFixFileHandler(self)
         self.observer = Observer()
@@ -490,11 +490,12 @@ class QuickFixGenerator:
         self.is_watching = True
         
         logger.info(f"Started file watching for: {self.workspace_path}")
+        return True
     
     def stop_file_watching(self):
         """Stop file system watching"""
         if not self.is_watching:
-            return
+            return True
         
         if self.observer:
             self.observer.stop()
@@ -505,6 +506,7 @@ class QuickFixGenerator:
         self.is_watching = False
         
         logger.info("Stopped file watching")
+        return True
     
     def start_background_cleanup(self):
         """Start background cleanup thread"""
@@ -565,10 +567,12 @@ class QuickFixGenerator:
     def get_statistics(self) -> Dict:
         """Get system statistics"""
         uptime = datetime.now() - self.processing_stats['start_time']
+        files_processed = self.processing_stats['files_processed']
         
         return {
             'uptime_hours': uptime.total_seconds() / 3600,
-            'files_processed': self.processing_stats['files_processed'],
+            'files_processed': files_processed,
+            'total_files_processed': files_processed,  # alias used by some callers
             'patterns_detected': self.processing_stats['patterns_detected'],
             'solutions_applied': self.processing_stats['solutions_applied'],
             'errors_encountered': self.processing_stats['errors_encountered'],

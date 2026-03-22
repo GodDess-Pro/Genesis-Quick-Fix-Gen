@@ -553,8 +553,9 @@ def api_diff_files():
     """Create diff between two files"""
     try:
         data = request.json
-        old_file = data.get('old_file')
-        new_file = data.get('new_file')
+        # Accept both 'old_file'/'new_file' and 'file1'/'file2' parameter names
+        old_file = data.get('old_file') or data.get('file1')
+        new_file = data.get('new_file') or data.get('file2')
         old_version = data.get('old_version')
         new_version = data.get('new_version')
         output_format = data.get('format', 'json')  # json, html, text
