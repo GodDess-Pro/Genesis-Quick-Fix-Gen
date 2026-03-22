@@ -8,7 +8,7 @@ import json
 import html
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Union
+from typing import List, Dict, Any, Optional, Tuple, Union
 from dataclasses import dataclass, asdict
 from diff_match_patch import diff_match_patch
 import logging
@@ -465,11 +465,11 @@ class DiffManager:
         logger.info(f"Diff saved as JSON: {json_path}")
         return json_path
     
-    def list_diffs(self) -> List[Dict[str, any]]:
+    def list_diffs(self) -> List[Dict[str, Any]]:
         """List all saved diff files (alias for list_saved_diffs)."""
         return self.list_saved_diffs()
 
-    def list_saved_diffs(self) -> List[Dict[str, any]]:
+    def list_saved_diffs(self) -> List[Dict[str, Any]]:
         """List all saved diff files"""
         diffs = []
         

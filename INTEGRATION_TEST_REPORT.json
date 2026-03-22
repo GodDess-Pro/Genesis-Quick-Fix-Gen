@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-22 19:26:48",
+  "timestamp": "2026-03-22 19:28:38",
   "summary": {
     "total_tests": 34,
     "passed_tests": 34,
@@ -10,7 +10,7 @@
     {
       "test": "Environment Setup",
       "passed": true,
-      "message": "Created workspace at /tmp/quickfix_test_f3ln_ymg/test_workspace"
+      "message": "Created workspace at /tmp/quickfix_test_u_271gof/test_workspace"
     },
     {
       "test": "Pattern '*.html'",
@@ -165,7 +165,7 @@
     {
       "test": "Backup Creation",
       "passed": true,
-      "message": "Backup: /tmp/quickfix_test_f3ln_ymg/test_workspace/QuickFixGenerator/backups/test_20260322_192648_bd776108.html"
+      "message": "Backup: /tmp/quickfix_test_u_271gof/test_workspace/QuickFixGenerator/backups/test_20260322_192838_bd776108.html"
     },
     {
       "test": "System Statistics",
@@ -179,8 +179,8 @@
     }
   ],
   "environment": {
-    "workspace_path": "/tmp/quickfix_test_f3ln_ymg/test_workspace",
-    "temp_directory": "/tmp/quickfix_test_f3ln_ymg",
+    "workspace_path": "/tmp/quickfix_test_u_271gof/test_workspace",
+    "temp_directory": "/tmp/quickfix_test_u_271gof",
     "python_version": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
     "os_platform": "posix"
   }
