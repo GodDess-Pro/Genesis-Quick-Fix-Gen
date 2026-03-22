@@ -702,12 +702,15 @@ class TemplateSystemManager:
                     template_id=template_id,
                     language=solution.language,
                     error_pattern_id=solution.error_pattern_id,
-                    template_content=solution.fix_description,
-                    variables=[],
+                    template_code=solution.fix_description,
+                    variable_placeholders=[],
                     confidence_score=0.8,
+                    generated_from=[solution.solution_id],
                     usage_count=0,
-                    created_date=datetime.datetime.now(),
-                    last_updated=datetime.datetime.now()
+                    success_rate=solution.success_rate,
+                    created_at=datetime.datetime.now(),
+                    last_updated=datetime.datetime.now(),
+                    tags=list(solution.tags)
                 )
                 self.templates[template_id] = template
                 generated_count += 1

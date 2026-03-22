@@ -510,6 +510,10 @@ class PatternRecognition:
             print(f"Error matching pattern {pattern}: {e}")
         return matches
 
+    def analyze_content(self, content: str, language: str, filename: str = "") -> List[ErrorPattern]:
+        """Alias for analyze_file – analyse content for error patterns."""
+        return self.analyze_file(content, language, filename)
+
 def detect_language(filename: str, content: str) -> str:
     """Detect programming language from filename and content"""
     extension_map = {

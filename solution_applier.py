@@ -50,6 +50,11 @@ class ApplicationResult:
     requires_verification: bool = False
     auto_applied: bool = False
 
+    @property
+    def backup_created(self) -> bool:
+        """True if a backup was created for this application."""
+        return self.backup_id is not None
+
 class SolutionApplier:
     """Handles automated application of solutions with backup/rollback"""
     
@@ -516,6 +521,11 @@ class SolutionApplier:
     def get_backup_info(self, backup_id: str) -> Optional[BackupInfo]:
         """Get information about a specific backup"""
         return self.backups.get(backup_id)
+
+    def create_backup(self, file_path: str, solution_id: str = "manual") -> Optional[str]:
+        """Public wrapper to create a file backup. Returns the backup path or None."""
+        info = self._create_backup(file_path, solution_id)
+        return str(info.backup_path) if info else None
     
     def list_backups(self, file_path: Optional[str] = None) -> List[BackupInfo]:
         """List all backups, optionally filtered by file path"""
